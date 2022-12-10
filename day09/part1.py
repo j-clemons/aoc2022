@@ -58,10 +58,21 @@ def part1(s: str) -> int:
     return len(set(positions))
 
 
-def compute(s: str) -> int:
-    h = (0, 0)
-    t = (0, 0)
+def move_tail(lead: tuple, tail: tuple) -> tuple:
+    l1, l2 = lead
+    t1, t2 = tail
 
+    if (abs(l1 - t1) == 2) & (abs(l2 - t2) == 2):
+        return ((l1 + t1) // 2, (l2 + t2) // 2)
+    if abs(l1 - t1) == 2:
+        return ((l1 + t1) // 2, l2)
+    elif abs(l2 - t2) == 2:
+        return (l1, (l2 + t2) // 2)
+    else:
+        return tail
+
+
+def compute(s: str) -> int:
     rope = [
         (0, 0),
         (0, 0),
@@ -74,7 +85,7 @@ def compute(s: str) -> int:
         (0, 0),
         (0, 0),
     ]
-    positions = [t]
+    positions = [rope[0]]
 
     move = {
         'R': (1, 0),
@@ -91,16 +102,12 @@ def compute(s: str) -> int:
         # loop for number of moves of the head
         for i in range(0, int(l[1])):
 
-            pp = (0,0)
+            pp = rope[0]
             # get the initial move
             mv = move.get(dir)
             # loop through each knot. Exclude last knot.
-            for k in range(0, 9):
+            for k in range(0, len(rope)):
                 l = rope[k]
-                f = rope[k+1]
-
-                # save follower starting position
-                f_p = f
 
                 if k == 0:
                     # move the leader
@@ -108,32 +115,13 @@ def compute(s: str) -> int:
                     l = add_tuple(tmp, mv)
                     rope[k] = l
 
-                    # determine if follower needs to move
-                    if dist(l, f) <= 1.41:
-                        pass
-                    else:
-                        # based on mv update the follower
-                        if mv == (1, 0):
-                            f = add_tuple(l, (-1, 0))
-                        elif mv == (-1, 0):
-                            f = add_tuple(l, (1, 0))
-                        elif mv == (0, 1):
-                            f = add_tuple(l, (0, -1))
-                        elif mv == (0, -1):
-                            f = add_tuple(l, (0, 1))
-                    rope[k+1] = f
                 else:
-                    rope[k+1] = pp
+                    rope[k] = move_tail(pp, rope[k])
 
-                pp = f_p
+                pp = rope[k]
 
-                #mv = tuple(map(operator.sub, f, f_p))
-                print(dir, i, k, mv, l, f, f_p)
+                positions.append(rope[9])
 
-            positions.append(rope[9])
-        print(rope)
-
-    breakpoint()
     return len(set(positions))
 
 
